@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 系统学习 · 30 个任务包追踪看板 V3.2</title>
+<style>
+  :root{
+    --bg:#f6f5f1; --panel:#ffffff; --panel2:#fbfaf7; --ink:#1b1a17; --muted:#6d6a63;
+    --line:#e2ded4; --accent:#2c6e49; --accent-soft:#e8f2ec; --warn:#b3452e;
+    --warn-soft:#fbeee9; --gold:#8a6d1f; --gold-soft:#fbf3dd; --blue:#2b5f8a; --blue-soft:#e9f1f7;
+    --shadow:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(0,0,0,.045);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141518; --panel:#1c1e22; --panel2:#202329; --ink:#e7e5df; --muted:#98958d;
+      --line:#2c2f36; --accent:#5fc08c; --accent-soft:#1b2b22; --warn:#e0795d;
+      --warn-soft:#2d1f1b; --gold:#d9b45c; --gold-soft:#2b2517; --blue:#7fb2d8; --blue-soft:#1a2530;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.28);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:14px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 80px}
+
+  /* header */
+  header{margin-bottom:22px}
+  h1{font-size:22px;font-weight:650;margin:0 0 6px;letter-spacing:-.2px}
+  .sub{color:var(--muted);font-size:13px;margin:0}
+  .sub b{color:var(--ink);font-weight:600}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0 14px}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;box-shadow:var(--shadow)}
+  .kpi .lbl{font-size:12px;color:var(--muted);margin-bottom:4px}
+  .kpi .val{font-size:24px;font-weight:650;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+  .kpi .val small{font-size:12px;font-weight:500;color:var(--muted);margin-left:3px}
+  .kpi.warn .val{color:var(--warn)}
+
+  .bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 4px}
+  .bar > i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .35s ease}
+  .barline{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:22px}
+
+  /* section */
+  h2{font-size:15px;font-weight:650;margin:30px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line);letter-spacing:-.1px}
+  h2 span{font-weight:400;color:var(--muted);font-size:12px;margin-left:8px}
+
+  /* gates */
+  .gates{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .gate{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:8px;padding:13px 15px}
+  .gate .gt{font-weight:650;font-size:13px;margin-bottom:4px}
+  .gate .gd{font-size:12.5px;color:var(--muted);line-height:1.55}
+
+  /* week */
+  .week{background:var(--panel);border:1px solid var(--line);border-radius:11px;margin-bottom:14px;box-shadow:var(--shadow);overflow:hidden}
+  .wkhead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:13px 16px;background:var(--panel2);border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .wkhead .wt{font-weight:650;font-size:14px}
+  .wkhead .wd{font-size:12px;color:var(--muted)}
+  .wkhead .wp{font-size:12px;color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums}
+
+  .day{display:grid;grid-template-columns:88px 1fr 128px;gap:14px;padding:13px 16px;border-top:1px solid var(--line);align-items:start}
+  .day:first-child{border-top:none}
+  .day.done{background:var(--accent-soft)}
+  .day.gated{background:var(--blue-soft)}
+  .day.gated.done{background:var(--accent-soft)}
+  .dcell .dd{font-weight:650;font-size:13px;font-variant-numeric:tabular-nums}
+  .dcell .dw{font-size:11.5px;color:var(--muted)}
+  .dcell .dstat{display:inline-block;margin-top:5px;font-size:10.5px;padding:1px 6px;border-radius:99px;background:var(--line);color:var(--muted)}
+  .dcell .dstat.on{background:var(--accent);color:#fff}
+
+  .tasks{display:flex;flex-direction:column;gap:6px;min-width:0}
+  .task{display:grid;grid-template-columns:16px 1fr;gap:8px;align-items:start;cursor:pointer;font-size:12.8px;line-height:1.5}
+  .task .box{
+    width:15px;height:15px;border:1.5px solid var(--line);border-radius:4px;margin-top:2px;
+    display:flex;align-items:center;justify-content:center;flex:0 0 auto;transition:.15s;background:var(--panel)
+  }
+  .task.on .box{background:var(--accent);border-color:var(--accent)}
+  .task.on .box::after{content:"";width:7px;height:4px;border-left:1.8px solid #fff;border-bottom:1.8px solid #fff;transform:rotate(-45deg) translate(1px,-1px)}
+  .task .tx{min-width:0}
+  .task .tg{display:inline-block;font-size:10.5px;font-weight:700;color:var(--muted);margin-right:5px;letter-spacing:.3px}
+  .task.on .tx{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line)}
+  .task.gatetask .tx{font-weight:600;color:var(--blue)}
+
+  .ocell{display:flex;flex-direction:column;gap:5px}
+  .ocell label{font-size:10.5px;color:var(--muted);letter-spacing:.3px}
+  .ocell input{
+    width:100%;font:inherit;font-size:12px;padding:5px 7px;border:1px solid var(--line);border-radius:6px;
+    background:var(--panel);color:inherit;outline:none
+  }
+  .ocell input:focus{border-color:var(--accent)}
+  .ocell .want{font-size:10.5px;color:var(--gold);line-height:1.4;word-break:break-all}
+
+  /* deliverables */
+  .delivs{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .dcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;box-shadow:var(--shadow)}
+  .dcard.done{border-color:var(--accent);background:var(--accent-soft)}
+  .dhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:3px}
+  .dhead .did{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.4px}
+  .dhead .dwhen{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .dname{font-weight:600;font-size:13.3px;margin-bottom:8px;line-height:1.45}
+  .checks{display:flex;flex-direction:column;gap:5px}
+  .chk{display:grid;grid-template-columns:15px 1fr;gap:8px;align-items:start;font-size:12.3px;color:var(--muted);cursor:pointer;line-height:1.5}
+  .chk .box{width:14px;height:14px;border:1.5px solid var(--line);border-radius:4px;margin-top:2px;flex:0 0 auto;background:var(--panel);transition:.15s;display:flex;align-items:center;justify-content:center}
+  .chk.on .box{background:var(--accent);border-color:var(--accent)}
+  .chk.on .box::after{content:"";width:6px;height:3.5px;border-left:1.8px solid #fff;border-bottom:1.8px solid #fff;transform:rotate(-45deg) translate(1px,-1px)}
+  .chk.on{color:var(--ink)}
+
+  /* footer */
+  footer{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  button{
+    font:inherit;font-size:12.5px;padding:7px 14px;border-radius:7px;border:1px solid var(--line);
+    background:var(--panel);color:var(--ink);cursor:pointer;transition:.15s
+  }
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.primary:hover{opacity:.9;color:#fff}
+  .tip{font-size:11.5px;color:var(--muted);margin-left:auto}
+
+  @media (max-width:860px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .gates{grid-template-columns:1fr}
+    .delivs{grid-template-columns:1fr}
+    .day{grid-template-columns:76px 1fr;grid-template-areas:"d t" "o o";gap:10px}
+    .dcell{grid-area:d}.tasks{grid-area:t}.ocell{grid-area:o;flex-direction:row;align-items:center;gap:8px}
+    .ocell label{flex:0 0 auto}
+  }
+  /* V3.0 新增：「当前包」标记 */
+  .day.cur{border-left:3px solid var(--blue);padding-left:13px}
+  .dcell .dtag{display:inline-block;margin-top:4px;font-size:10px;color:var(--blue);font-weight:600}
+  .dcell .dstat.cur{background:var(--blue);color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>AI 系统学习 · 30 个任务包追踪看板 <span style="font-size:13px;opacity:.65;font-weight:400">V3.2</span></h1>
+    <p class="sub"><b>30 个任务包（P01–P30）</b> ｜ <b>197 h</b> ｜ 四线并行：<b>WorkBuddy／硬件文档／GitHub／热点</b>（Vibe Coding 降为贯穿能力）</p>
+    <p class="sub" style="margin-top:6px;font-size:12px;opacity:.75"><b>V3.2（2026-10-20 11:35）：本看板不写完成日期</b>——按 <b>52 h/周</b>（工作日 8 h ＋ 周末 6 h），197 h 总量约合 <b>4 周量级</b>，但这是<b>算术结果、不是承诺</b>：52 h/周得全部兑现才够，一周出差就欠 40 h（≈5.7 包）。<b>第 4 格「还需 N 天」是按剩余工时实时估的参考值，随时会变，别当 deadline。</b>顺延不算落后，<b>做完一包才进下一包</b>。完成状态仍由小A预置，<b>你不用手勾</b>。</p>
+  </header>
+
+  <div class="kpis">
+    <div class="kpi"><div class="lbl">总体完成度</div><div class="val" id="k1">0<small>%</small></div></div>
+    <div class="kpi"><div class="lbl">已完成包数</div><div class="val" id="k2">0<small>/ 30</small></div></div>
+    <div class="kpi"><div class="lbl">当前进行中</div><div class="val" id="k3">P01</div></div>
+    <div class="kpi"><div class="lbl">还需（按 52 h/周 估 · 非承诺）</div><div class="val" id="k4">—<small>天</small></div></div>
+  </div>
+
+  <div class="bar"><i id="barfill" style="width:0%"></i></div>
+  <div class="barline"><span id="barl">尚未开始</span><span id="barr">进度按「三格全勾 ＋ 已填产物」判定</span></div>
+
+  <h2>三个闸门 <span>缺一个就不算闭环，勾了也不算完成</span></h2>
+  <div class="gates">
+    <div class="gate">
+      <div class="gt">包闸门 · 每一包收尾</div>
+      <div class="gd">A／B／C 中<b>实际存在的格子全勾</b> ＋ 必须填一句「这包留下的能 run 的东西」。三格全勾但产物为空 → 该包不计完成，<b>不进下一包</b>。</div>
+    </div>
+    <div class="gate">
+      <div class="gt">阶段闸门 · P07／P14／P21／P28</div>
+      <div class="gd">自测 10 题 <b>≥ 7 分</b>才可进下一块。未过则<b>不推进</b>，用包外时间补课；<b>不占包序号、不改交付节奏</b>。</div>
+    </div>
+    <div class="gate">
+      <div class="gt">交付闸门 · 各交付物对应包</div>
+      <div class="gd">逐条勾验收要点。未全勾则标「未完成」，不许自己宣布完成。</div>
+    </div>
+  </div>
+
+  <h2>30 个任务包 <span>做完一包进下一包，点小方块勾选</span></h2>
+  <div id="weeks"></div>
+
+  <h2>9 件交付物 <span>逐条勾验收要点，全勾才点亮</span></h2>
+  <div class="delivs" id="delivs"></div>
+
+  <footer>
+    <button class="primary" id="btnExport">导出进度 JSON</button>
+    <button id="btnReset">重置为预置状态</button>
+    <span class="tip">勾选与填写自动保存在本机浏览器，不上传任何地方。换设备请先导出。</span>
+  </footer>
+</div>
+
+<script>
+/* ============ 数据区（要改内容，只改这里） ============ */
+
+const STAGES = [
+  {id:1, title:"W1 · 地基块（P01–P07）", desc:"GitHub 六课全部结业 ＋ WorkBuddy 模块 4／5 起步", deliv:"D1"},
+  {id:2, title:"W2 · 硬件文档智能（P08–P14）", desc:"报价单／图纸 PDF 结构化 ＋ 20 份样本评测", deliv:"D2"},
+  {id:3, title:"W3 · 知识资产（P15–P21）", desc:"五金工艺与成本知识库（本地 RAG ＋ 30 题评测）", deliv:"D3"},
+  {id:4, title:"W4 · Agent 落地（P22–P28）", desc:"自建 MCP server ＋ 评估体系 ＋ 方法论收口", deliv:"D4 · D5 · D6 · D10"},
+  {id:5, title:"收口块（P29–P30）", desc:"AI 工作方式 V3.0 ＋ GitHub 实践手册 ＋ 全量复盘", deliv:"D7 · D8"}
+];
+
+/* V3.0：字段由「日期＋星期」改为「包号」；一包＝原来一天的工作量（A 1.5h ＋ B 2h ＋ C 3.5h ＝ 7h 参考） */
+const PACKS = [
+  {p:"P01",wk:1,a:"GitHub 课① Introduction to GitHub ＋ 课② Communicate using Markdown（已结业）",b:"WorkBuddy 文档全站目录 ＋ 概念对齐 6 个",c:"建个人账号与首仓；能力矩阵 V1",out:"选型结论 ＋ 能力矩阵 V1"},
+  {p:"P02",wk:1,a:"GitHub 课③ Git ＋ 课④ Pages ＋ 课⑤ Actions ＋ 课⑥ Copilot（同日全部结业）",b:"拆 1 个官方 skill 范例",c:"用 md 重写学习看板并入库",out:"学习看板 md 版（已入库）"},
+  {p:"P03",wk:1,a:"WB 模块 4：Skill 工程（读官方规范 ＋ 拆 3 个自建 skill）",b:"",c:"本地 Git 实操：init／add／commit／branch／冲突／撤销三招／gitignore（clone、push 移至 P04）＋ 提前做 P04 的 A 段：照规范改写 data-source-audit",out:"Skill规范摘要 ＋ Git实操记录 ＋ skill改写稿 ＋ P04任务卡"},
+  {p:"P04",wk:1,a:"（已提前完成）照规范改写 data-source-audit 并覆盖生效文件（原文件备份 SKILL.md.20261020.bak）",b:"先 anthropics/skills 1 h → 后 obra/superpowers 1 h（先官方后个人；含 P03 顺延）",c:"最先 30 分钟：建 push-drill 空仓演习（先验认证）→ Pages 上线（先 cp 成 dashboard.html）→ 推正式仓 ai-lab",out:"站点上线 ＋ 两库结构对比"},
+  {p:"P05",wk:1,a:"WB 模块 5：33 个 skill 体检（上）（前 17 个）",b:"对比两仓库 vs 自己的写法",c:"Git 不看答案重打 90 min（用 P03 记录 §八 清单）＋ 热点：Skill 标准化实测 2 h；案例①顺延 P06",out:"差距清单 ＋ Git 重打记录"},
+  {p:"P06",wk:1,a:"WB 模块 5（收）：体检后 16 个 ＋ 汇总",b:"读自己 33 个 skill",c:"案例① 1.5 h（接 P05）＋ 整改 2 h：合并 3 个重复 skill ＋ 下线 2 个过期 skill；2 h 不够则用 P12 的 A 段空位补",out:"体检表（全）＋ 整改后 skill"},
+  {p:"P07",wk:1,gate:true,a:"阶段闸门：复盘 ＋ 自测 10 题（≥7 分才可进 W2）＋ 用户级 MEMORY 蒸馏 60 分钟（分流对照表须先交审再改）",out:"D1 初稿"},
+
+  {p:"P08",wk:2,a:"WB 模块 1／2：作用域、规则注入",b:"结构化输出与 schema 约束",c:"报价单解析器 v1（PDF/Excel → 物料／单价／阶梯价／交期）",out:"解析器 v1"},
+  {p:"P09",wk:2,a:"WB 模块 3：模型路由与积分治理",b:"多模态文档抽取方法",c:"解析器 v2（阶梯价归一 ＋ 异常标记）",out:"解析器 v2"},
+  {p:"P10",wk:2,a:"WB 模块 9：Hooks",b:"图纸 PDF 字段（尺寸／公差／材料／表面处理／技术要求）",c:"图纸 PDF 抽取器（走外发版或截图，绕开 DLP）",out:"抽取器 v1"},
+  {p:"P11",wk:2,a:"WB 模块 10：Slash Commands",b:"20 份真实样本准备与标注",c:"准确率评测：20 份人工核对",out:"评测报告"},
+  {p:"P12",wk:2,a:"（本段空出：课⑤ 已提前结业，登记为 P06 整改兜底位）",b:"17 条任务 prompt 复盘",c:"热点：上下文工程量化 2 h ＋ 案例② 1.5 h",out:"预算审计表"},
+  {p:"P13",wk:2,a:"WB 模块 11：自动化设计模式",b:"MCP 官方文档（无状态化后的部署）",c:"配通 1 个本地 MCP（sqlite 或 filesystem）",out:"MCP 配通记录"},
+  {p:"P14",wk:2,gate:true,a:"阶段闸门：复盘 ＋ 自测 10 题（≥7 分才可进 W3）",out:"D2 定稿"},
+
+  {p:"P15",wk:3,a:"WB 模块 13：资料库",b:"RAG 速通（1h）＋ 嵌入实验",c:"相似度实验（同一句对 10 句，对比 2 个模型）",out:"相似度对比表"},
+  {p:"P16",wk:3,a:"WB 模块 12：子智能体",b:"切分与元数据设计（三类文档差异）",c:"设计三类文档切分方案",out:"切分方案 V1"},
+  {p:"P17",wk:3,a:"WB 模块 12（续）：拆分实验",b:"Chroma 使用",c:"搭库：灌工艺知识 ＋ 成本规则 ＋ 供应商档案（先脱敏）",out:"知识库 V0.9"},
+  {p:"P18",wk:3,a:"WB 模块 14：浏览器控制",b:"混合检索与重排原理",c:"BM25 ＋ 向量混合检索 ＋ 重排，三方案对比",out:"检索方案对比"},
+  {p:"P19",wk:3,a:"WB 模块 15：发布为应用",b:"评估方法",c:"热点：MCP 无状态 ＋ A2A v1.0 ＋ 案例③",out:"A2A 决策备忘"},
+  {p:"P20",wk:3,a:"WB 模块 6：专家与专家团",b:"30 题评测设计（10 事实/10 跨文档/10 库外）",c:"跑 30 题 ＋ 基线",out:"30 题 ＋ 基线"},
+  {p:"P21",wk:3,gate:true,a:"阶段闸门：复盘 ＋ 自测 10 题（≥7 分才可进 W4）",out:"D3 定稿"},
+
+  {p:"P22",wk:4,a:"WB 模块 7：连接器清单与授权",b:"Agent 设计模式（规划／工具／反思）",c:"手写最小 agent 循环（200 行内，不用框架）",out:"Agent 循环"},
+  {p:"P23",wk:4,a:"WB 模块 11（续）：接入自动化",b:"多智能体协作模式",c:"拆「取数员/分析员/校对员」，串行 vs 并行",out:"多智能体实验"},
+  {p:"P24",wk:4,a:"WB 模块 8（续）：自建 MCP server",b:"MCP server 开发文档",c:"写 server：查成本库 ＋ 查数据源登记表",out:"D4 MCP server"},
+  {p:"P25",wk:4,a:"WB 模块 4（收）：Skill 规范定稿",b:"把 1 个工序改造成 agent 流水线",c:"改造工序流水线 v1",out:"流水线 v1"},
+  {p:"P26",wk:4,a:"WB 模块 5（收）：体检收口",b:"轨迹级评测（LLM-as-Judge）",c:"热点：Computer Use ＋ Deep Research ＋ 案例④",out:"实测报告"},
+  {p:"P27",wk:4,a:"GitHub：项目补 README ＋ 学习仓整理",b:"评估集设计",c:"20 条样例 ＋ 自动打分 ＋ 改坏口径掉分实测",out:"D5 / D10"},
+  {p:"P28",wk:4,gate:true,a:"阶段闸门：复盘 ＋ 自测 10 题",out:"D4 / D5 / D6 定稿"},
+
+  {p:"P29",wk:5,a:"撰写《AI 工作方式 V3.0（硬件采购版）》",b:"撰写《GitHub 实践手册》",c:"两份初稿成型",out:"D7 / D8 初稿"},
+  {p:"P30",wk:5,a:"全量复盘：哪些判断被证伪、哪些可制度化",b:"3 个月维持计划",c:"定稿与归档",out:"D7 / D8 定稿 ＋ 复盘报告"}
+];
+
+const DELIVS = [
+  {id:"D1",name:"WorkBuddy 能力手册 V1.0",when:"P07 后",who:"你 ＋ 团队",
+   checks:["15 个模块逐个配过一遍","33 个 skill 体检表完成","Skill 编写规范 V2 定稿"]},
+  {id:"D2",name:"硬件文档智能套件",when:"P14 后",who:"采购组",
+   checks:["报价单解析器可用","图纸 PDF 字段抽取器可用","20 份样本准确率有具体数字"]},
+  {id:"D3",name:"五金工艺与成本知识库 V1.0",when:"P21 后",who:"你 ＋ 新人",
+   checks:["本地 RAG 跑通（Ollama ＋ Chroma）","30 题评测有基线分","失败案例逐条分析过"]},
+  {id:"D4",name:"五金场景 MCP server",when:"P28 后",who:"后续所有 agent",
+   checks:["暴露成本库查询工具","暴露数据源登记表查询工具","能被一个外部 agent 接上跑通"]},
+  {id:"D5",name:"带评估的 skill 改造样板",when:"P28 后",who:"团队",
+   checks:["20 条样例集建立","自动打分脚本跑通","有基线分 ＋ 改坏口径后的掉分实测"]},
+  {id:"D6",name:"前沿能力验证报告",when:"P28 后",who:"决策用",
+   checks:["Skills 生态：能用／不能用／边界","Computer Use：能干到哪一步","Deep Research：可用性结论","轨迹级评测：怎么落地"]},
+  {id:"D10",name:"我的 AI 协作工作法 V1.0",when:"P27 后",who:"你自己",
+   checks:["需求拆解法（拆成结构，不只拆成页面）","读 AI 代码的三步法","doom loop 脱困法","上线／备份／隐私／成本四清单","工具选型决策表"]},
+  {id:"D7",name:"AI 工作方式 V3.0（硬件采购版）",when:"P30 后",who:"同事照做",
+   checks:["新任务怎么起有明确步骤","口径怎么管有明确规则","skill 怎么写有明确模板","怎么证明它对有明确方法"]},
+  {id:"D8",name:"GitHub 实践手册",when:"P30 后",who:"你自己长期用",
+   checks:["6 门官方课全部完成并记录","4 个案例拆解笔记","三个固定动作写成习惯清单"]}
+];
+
+/* ============ 逻辑区 ============ */
+const KEY = "aiplan_v3";
+const START = new Date(2026,9,18);   // 2026-10-18 开工日
+const TOTAL_H = 197;   // 全案总工时（V8.9→V9.1 一字未改）
+const HOURS_PER_WEEK = 52;   // 你的真实周投入：工作日 8 h × 5 ＋ 周末 6 h × 2（2026-10-20 报）
+const PACK_H = 7;            // 一包的工作量参考值
+
+/* ---- 预置完成状态（由小A维护；种田人不手勾） ----
+   改这张表 → 同时把 SEED_VER 改一个新值 → 重新打开即生效。
+   V3.0：键由「日期」改为「包号」；doneAt 为实际完成日（记录用，不参与判定）。 */
+const SEED_VER = "2026-10-20-v3.2";
+const SEED = {
+  "P01": {a:true, b:true, c:true, out:"选型结论（交付物\\D段工具选型结论_20261018_V1.0.md）＋ 能力矩阵 V1", doneAt:"2026-10-18"},
+  "P02": {a:true, b:true, c:true, out:"课③④⑤⑥ 全部结业（课③ 17:15:51 收口）", doneAt:"2026-10-19"},
+  "P03": {a:true, b:true, c:true, out:"Skill规范摘要 ＋ Git实操记录 ＋ skill改写稿 ＋ P04任务卡（B 段顺延 P04；另提前吃掉 P04 A 段）", doneAt:"2026-10-20"},
+  "P04": {a:true, b:true, c:false, out:"A｜data-source-audit 已覆盖生效文件（67 行）；B｜两库结构对比_20261020_V1.0.md 已出（19 vs 15 个 skill）；C｜push-drill 本地仓已建（1 提交，remote 已配），**push 待你在本机执行**——本执行环境 github.com:443 不通"}
+};
+
+/* ---- 交付物预置：六门 GitHub 课已于 10/19 全部结业，D8 第 1 条成立 ---- */
+const DELIV_SEED = {
+  "D8": [true, false, false]
+};
+
+let state = load();
+
+function load(){
+  let s = null;
+  try{ s = JSON.parse(localStorage.getItem(KEY)); }catch(e){}
+  if(!(s && s.days && s.deliv && s.days.length === PACKS.length)){
+    const days = PACKS.map(()=>({a:false,b:false,c:false,out:"",doneAt:""}));
+    const deliv = {};
+    DELIVS.forEach(d=>{ deliv[d.id] = d.checks.map(()=>false); });
+    s = {days, deliv, seedVer:""};
+  }
+  // 兼容：旧结构没有 doneAt
+  s.days.forEach(d=>{ if(typeof d.doneAt !== "string") d.doneAt = ""; });
+
+  if(s.seedVer !== SEED_VER){
+    PACKS.forEach((d,i)=>{
+      const row = SEED[d.p];
+      if(!row) return;
+      ["a","b","c"].forEach(k=>{ if(k in row) s.days[i][k] = !!row[k]; });
+      if(typeof row.out === "string") s.days[i].out = row.out;
+      if(typeof row.doneAt === "string") s.days[i].doneAt = row.doneAt;
+    });
+    Object.keys(DELIV_SEED).forEach(id=>{
+      if(!s.deliv[id]) return;
+      DELIV_SEED[id].forEach((v,j)=>{ if(j < s.deliv[id].length) s.deliv[id][j] = !!v; });
+    });
+    s.seedVer = SEED_VER;
+    save(s);
+  }
+  return s;
+}
+
+function save(st){
+  try{ localStorage.setItem(KEY, JSON.stringify(st || state)); }catch(e){}
+}
+
+// 某包实际存在的任务键（闸门包只有 a；空键不渲染、也不要求）
+function taskKeys(cfg){
+  if(cfg.gate) return ["a"];
+  return ["a","b","c"].filter(k => (cfg[k]||"").trim() !== "");
+}
+function packDone(i){
+  const d = state.days[i], cfg = PACKS[i];
+  const ok = taskKeys(cfg).every(k => !!d[k]);
+  if(!ok) return false;
+  if(!(d.out||"").trim()) return false;   // 包闸门：产物为空不算完成
+  return true;
+}
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+// 自动记录「完成于」：勾满的那天写入，取消勾选则清空
+function stampDone(){
+  let changed = false;
+  PACKS.forEach((p,i)=>{
+    const st = state.days[i], ok = packDone(i);
+    if(ok && !st.doneAt){ st.doneAt = todayStr(); changed = true; }
+    if(!ok && st.doneAt){ st.doneAt = ""; changed = true; }
+  });
+  if(changed) save();
+}
+
+function render(){
+  const wEl = document.getElementById("weeks");
+  wEl.innerHTML = "";
+  // 当前包 = 第一个未完成的包
+  let curIdx = PACKS.findIndex((_,i)=>!packDone(i));
+  if(curIdx < 0) curIdx = PACKS.length - 1;
+
+  STAGES.forEach(w=>{
+    const rows = PACKS.map((d,i)=>({d,i})).filter(x=>x.d.wk===w.id);
+    const doneCount = rows.filter(x=>packDone(x.i)).length;
+    const box = document.createElement("div");
+    box.className = "week";
+    box.innerHTML = `
+      <div class="wkhead">
+        <div>
+          <div class="wt">${w.title}</div>
+          <div class="wd">${w.desc}</div>
+        </div>
+        <div class="wp">${doneCount}/${rows.length} 包 ｜ 交付 ${w.deliv}</div>
+      </div>`;
+    rows.forEach(({d,i})=>{
+      const st = state.days[i];
+      const done = packDone(i);
+      const isCur = (i === curIdx);
+      const el = document.createElement("div");
+      el.className = "day" + (done?" done":"") + (d.gate?" gated":"") + (isCur?" cur":"");
+      const tasks = d.gate
+        ? [{k:"a",g:"闸门",t:d.a,gc:"gatetask"}]
+        : [{k:"a",g:"A",t:d.a},{k:"b",g:"B",t:d.b},{k:"c",g:"C",t:d.c}]
+            .filter(t => (t.t||"").trim() !== "");
+      el.innerHTML = `
+        <div class="dcell">
+          <div class="dd">${d.p}</div>
+          <div class="dw">第 ${i+1} 包</div>
+          <div class="dtag">${d.gate ? "阶段闸门" : "7 h 参考"}</div>
+          <div class="dstat ${done?'on':(isCur?'cur':'')}">${done ? (st.doneAt||"已完成") : (isCur?"进行中":"未完成")}</div>
+        </div>
+        <div class="tasks">
+          ${tasks.map(t=>`
+            <div class="task ${st[t.k]?'on':''} ${t.gc||''}" data-day="${i}" data-k="${t.k}">
+              <div class="box"></div>
+              <div class="tx"><span class="tg">${t.g}</span>${t.t}</div>
+            </div>`).join("")}
+        </div>
+        <div class="ocell">
+          <label>本包产物</label>
+          <div class="want">计划：${d.out || "—"}</div>
+          <input data-out="${i}" value="${(st.out||"").replace(/"/g,"&quot;")}" placeholder="实际做出来的东西">
+        </div>`;
+      box.appendChild(el);
+    });
+    wEl.appendChild(box);
+  });
+
+  // 勾选
+  wEl.querySelectorAll(".task").forEach(t=>{
+    t.addEventListener("click",()=>{
+      const i = +t.dataset.day, k = t.dataset.k;
+      state.days[i][k] = !state.days[i][k];
+      save(); stampDone(); render();
+    });
+  });
+  // 产物输入
+  wEl.querySelectorAll("input[data-out]").forEach(inp=>{
+    inp.addEventListener("input",()=>{
+      state.days[+inp.dataset.out].out = inp.value;
+      save(); stampDone(); reflectStats();
+    });
+    inp.addEventListener("blur",render);
+  });
+
+  // 交付物
+  const dEl = document.getElementById("delivs");
+  dEl.innerHTML = "";
+  DELIVS.forEach(dv=>{
+    const arr = state.deliv[dv.id] || [];
+    const all = arr.length && arr.every(Boolean);
+    const card = document.createElement("div");
+    card.className = "dcard" + (all?" done":"");
+    card.innerHTML = `
+      <div class="dhead"><span class="did">${dv.id}</span><span class="dwhen">${dv.when} ｜ ${dv.who}</span></div>
+      <div class="dname">${dv.name}</div>
+      <div class="checks">
+        ${dv.checks.map((c,ci)=>`<div class="chk ${arr[ci]?'on':''}" data-d="${dv.id}" data-i="${ci}">
+          <div class="box"></div><div>${c}</div></div>`).join("")}
+      </div>`;
+    dEl.appendChild(card);
+  });
+  dEl.querySelectorAll(".chk").forEach(c=>{
+    c.addEventListener("click",()=>{
+      const id = c.dataset.d, i = +c.dataset.i;
+      state.deliv[id][i] = !state.deliv[id][i];
+      save(); render();
+    });
+  });
+
+  reflectStats();
+}
+
+function reflectStats(){
+  const total = PACKS.length;
+  const done = PACKS.map((_,i)=>packDone(i)).filter(Boolean).length;
+  const pct = Math.round(done/total*100);
+
+  // 当前包
+  let cur = PACKS.findIndex((_,i)=>!packDone(i));
+  const curLabel = cur < 0 ? "全部完成" : PACKS[cur].p;
+
+  // V3.1 改用「剩余工时 ÷ 你的周投入」算，不再用「已过天数 ÷ 已完成包」
+  // —— 后者会把"一天做两包"和"一包拖三天"平均成同一个数，估出来没有意义
+  const hoursLeft = Math.max(0, TOTAL_H - done * PACK_H);
+  const weeksLeft = hoursLeft / HOURS_PER_WEEK;
+  const etaDays = Math.ceil(weeksLeft * 7);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const elapsed = Math.max(1, Math.round((today - START)/86400000) + 1);
+  const pace = HOURS_PER_WEEK / PACK_H;   // 每周可推进的包数
+
+  document.getElementById("k1").innerHTML = pct + "<small>%</small>";
+  document.getElementById("k2").innerHTML = done + "<small>/ " + total + "</small>";
+  document.getElementById("k3").innerHTML = curLabel;
+  document.getElementById("k4").innerHTML = (done < total ? "≈" + etaDays : "0") + "<small>天</small>";
+  document.getElementById("barfill").style.width = pct + "%";
+  document.getElementById("barl").textContent = pct===0 ? "尚未开始" : (pct>=100 ? "全部完成" : "已推进 " + pct + "%（" + done + "/" + total + " 包）");
+  document.getElementById("barr").textContent = (done < total)
+    ? "投入 52 h/周（工作日 8 h ＋ 周末 6 h）｜剩余 " + hoursLeft + " h ≈ " + weeksLeft.toFixed(1) + " 周｜节奏约 " + pace.toFixed(1) + " 包/周｜开工第 " + elapsed + " 天｜以上均为估算，不构成完成日承诺"
+    : "30 包全部完成 ｜ 全案 197 h";
+}
+
+document.getElementById("btnReset").addEventListener("click",()=>{
+  if(!confirm("确定要清空自己的勾选、回到「小A预置状态」吗？此操作不可撤销。")) return;
+  localStorage.removeItem(KEY);
+  state = load();
+  render();
+});
+
+document.getElementById("btnExport").addEventListener("click",()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "AI学习进度_" + new Date().toISOString().slice(0,10) + ".json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+stampDone();
+render();
+</script>
+</body>
+</html>

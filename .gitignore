@@ -1,0 +1,27 @@
+# 办公软件与系统产生的垃圾
+~$*
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# 运行时与依赖
+node_modules/
+__pycache__/
+*.pyc
+
+# 临时与备份
+*.tmp
+*.bak
+*.log
+
+# 凭据类（永不上传）
+密钥.local
+*.local
+.env
+*.token
+*.pem
+*.key
+
+# 编辑器
+.vscode/
+.idea/
