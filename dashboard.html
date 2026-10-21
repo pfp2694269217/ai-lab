@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 系统学习 · 30 个任务包追踪看板 V3.5</title>
+<title>AI 系统学习 · 30 个任务包追踪看板 V3.6</title>
 <style>
   :root{
     --bg:#f6f5f1; --panel:#ffffff; --panel2:#fbfaf7; --ink:#1b1a17; --muted:#6d6a63;
@@ -138,9 +138,9 @@
 <div class="wrap">
 
   <header>
-    <h1>AI 系统学习 · 30 个任务包追踪看板 <span style="font-size:13px;opacity:.65;font-weight:400">V3.5</span></h1>
+    <h1>AI 系统学习 · 30 个任务包追踪看板 <span style="font-size:13px;opacity:.65;font-weight:400">V3.6</span></h1>
     <p class="sub"><b>30 个任务包（P01–P30）</b> ｜ <b>197 h</b> ｜ 四线并行：<b>WorkBuddy／硬件文档／GitHub／热点</b>（Vibe Coding 降为贯穿能力）</p>
-    <p class="sub" style="margin-top:6px;font-size:12px;opacity:.75"><b>V3.5（2026-10-20 14:10）：技能口径已校准</b>——磁盘实扫 <b>skill 共 49 个 ＝ 自建 31 ＋ 市场安装 18</b>（判据＝有无 <code>_skillhub_meta.json</code>；<code>ima-skills</code> 无 <code>__skillhub</code> 后缀但 <code>source: marketplace</code>，属市场件）。方案已升 <b>V9.3</b>：「33 个」→「<b>自建 31 个</b>」、P06 改为「<b>体检后 15 个</b>」，16＋15＝31 对得上。<b>P05 的 A／B 已完成，C（Git 不看答案重打 90 min）待你本人执行</b>，跑完 C 才算这包完成。<b>V3.2 起不写完成日期</b>——按 <b>52 h/周</b>（工作日 8 h ＋ 周末 6 h），197 h 总量约合 <b>4 周量级</b>，但这是<b>算术结果、不是承诺</b>：52 h/周得全部兑现才够，一周出差就欠 40 h（≈5.7 包）。<b>第 4 格「还需 N 天」是按剩余工时实时估的参考值，随时会变，别当 deadline。</b>顺延不算落后，<b>做完一包才进下一包</b>。完成状态仍由小A预置，<b>你不用手勾</b>。</p>
+    <p class="sub" style="margin-top:6px;font-size:12px;opacity:.75"><b>V3.6（2026-10-21 14:30）：P05 已收口（降级）</b>——Git 重打两轮：10-20 自主摸底仅 <b>1/7</b> 未过；10-21 改带教跟敲，<b>七步全做完</b>（墙钟 4h06m／动手净时 87min）、四道自查全绿，但 <b>未达自主实操</b>，经本人决定按 §7.3 降级、P05 按 80% 计进 P06，<b>自主复跑留待后补</b>。<b>V3.5 起技能口径已校准</b>——磁盘实扫 <b>skill 共 49 个 ＝ 自建 31 ＋ 市场安装 18</b>（判据＝有无 <code>_skillhub_meta.json</code>；<code>ima-skills</code> 无 <code>__skillhub</code> 后缀但 <code>source: marketplace</code>，属市场件）。方案已升 <b>V9.3</b>：「33 个」→「<b>自建 31 个</b>」、P06 改为「<b>体检后 15 个</b>」，16＋15＝31 对得上。<b>P05 的 A／B 已完成，C（Git 不看答案重打 90 min）待你本人执行</b>，跑完 C 才算这包完成。<b>V3.2 起不写完成日期</b>——按 <b>52 h/周</b>（工作日 8 h ＋ 周末 6 h），197 h 总量约合 <b>4 周量级</b>，但这是<b>算术结果、不是承诺</b>：52 h/周得全部兑现才够，一周出差就欠 40 h（≈5.7 包）。<b>第 4 格「还需 N 天」是按剩余工时实时估的参考值，随时会变，别当 deadline。</b>顺延不算落后，<b>做完一包才进下一包</b>。完成状态仍由小A预置，<b>你不用手勾</b>。</p>
   </header>
 
   <div class="kpis">
@@ -262,13 +262,13 @@ const PACK_H = 7;            // 一包的工作量参考值
 /* ---- 预置完成状态（由小A维护；种田人不手勾） ----
    改这张表 → 同时把 SEED_VER 改一个新值 → 重新打开即生效。
    V3.0：键由「日期」改为「包号」；doneAt 为实际完成日（记录用，不参与判定）。 */
-const SEED_VER = "2026-10-20-v3.5";
+const SEED_VER = "2026-10-21-v3.6";
 const SEED = {
   "P01": {a:true, b:true, c:true, out:"选型结论（交付物\\D段工具选型结论_20261018_V1.0.md）＋ 能力矩阵 V1", doneAt:"2026-10-18"},
   "P02": {a:true, b:true, c:true, out:"课③④⑤⑥ 全部结业（课③ 17:15:51 收口）", doneAt:"2026-10-19"},
   "P03": {a:true, b:true, c:true, out:"Skill规范摘要 ＋ Git实操记录 ＋ skill改写稿 ＋ P04任务卡（B 段顺延 P04；另提前吃掉 P04 A 段）", doneAt:"2026-10-20"},
   "P04": {a:true, b:true, c:true, out:"A｜data-source-audit 已覆盖生效文件（67 行）；B｜两库结构对比_20261020_V1.0.md（官方 19 vs 个人 15）；C｜push 通路验证完毕（push-drill 3023bfb、ai-lab 28a09fc 均 main→main）＋ Pages 已上线 pfp2694269217.github.io/ai-lab/dashboard.html", doneAt:"2026-10-20"},
-  "P05": {a:true, b:true, c:false, out:"A＋B 已出：实验代码\\1020_Skill体检\\Skill体检差距清单_20261020_V1.1.md（自建 31 检出 16 个：8 个缺 version、ima-skills 描述为空、2 个带真名 user 字段；两库标尺差距 8 条按 P0/P1/P2 排序）；t3=a 已顺手修 3 处（ima-skills 描述、2 个 user 字段）；C 待做：Git重打记录_20261020_V1.0.md 空表已建、1020_git练习2 空目录已建（90 min 重打由你本人执行）"}
+  "P05": {a:true, b:true, c:true, out:"A＋B：Skill体检差距清单_20261020_V1.1.md（自建 31 检出 16 个：8 个缺 version、ima-skills 描述为空、2 个带真名 user 字段）；t3=a 已修 3 处。C：Git 重打两轮——10-20 自主摸底仅 1/7 未过；10-21 改带教跟敲，七步全做完（墙钟 4h06m／动手净时 87min），四道自查全绿（|\\ 分叉、冲突标记 0、status 两列、check-ignore 行号 1/2），但未达自主实操，经本人 14:27 决定按 §7.3 降级收口（P05 按 80% 计），自主复跑留待后补", doneAt:"2026-10-21"}
 };
 
 /* ---- 交付物预置：六门 GitHub 课已于 10/19 全部结业，D8 第 1 条成立 ---- */
